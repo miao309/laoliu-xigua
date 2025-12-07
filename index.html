@@ -1,257 +1,849 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="zh-CN">
 <head>
-    <meta charset="utf-8">
-
-    <title>老六西瓜</title>
-
-    <!--http://www.html5rocks.com/en/mobile/mobifying/-->
-    <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1, minimum-scale=1,maximum-scale=1" />
-
-    <!--https://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariHTMLRef/Articles/MetaTags.html-->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="format-detection" content="telephone=no">
-
-    <!-- force webkit on 360 -->
-    <meta name="renderer" content="webkit" />
-    <meta name="force-rendering" content="webkit" />
-    <!-- force edge on IE -->
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-    <meta name="msapplication-tap-highlight" content="no">
-
-    <!-- force full screen on some browser -->
-    <meta name="full-screen" content="yes" />
-    <meta name="x5-fullscreen" content="true" />
-    <meta name="360-fullscreen" content="true" />
-
-    <!-- force screen orientation on some browser -->
-    <meta name="screen-orientation" content="" />
-    <meta name="x5-orientation" content="">
-
-    <!--fix fireball/issues/3568 -->
-    <!--<meta name="browsermode" content="application">-->
-    <meta name="x5-page-mode" content="app">
-
-    <!--<link rel="apple-touch-icon" href=".png" />-->
-    <!--<link rel="apple-touch-icon-precomposed" href=".png" />-->
-
-
-    <!-- <script>
-        pushHistory();
-        window.addEventListener("popstate", function(e) {
-
-        }, false);
-        function pushHistory() {
-            var state = {
-                title: "",
-                url: window.location.href
-            };
-            window.history.pushState(state, state.title, state.url);
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>老6的西瓜 - 合成大西瓜</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f0f8e8;
+            --primary: #5a9f5a;
+            --secondary: #ff6b6b;
+            --accent: #f7dc6f;
+            --text: #2c3e50;
+            --card: #ffffff;
+            --shadow: rgba(90,159,90,0.2);
+            --dark-green: #27ae60;
+            --light-green: #a8e6cf;
         }
-    </script> -->
-    <!--  <script type="text/javascript">
-        var agent = navigator.userAgent.toLowerCase();
-        if(agent.indexOf("qbwebviewtype") > 0) {
-           location.href = "http://g.fromgame.com/game/462/";
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-    </script> -->
 
-    <link rel="stylesheet" type="text/css" href="style-mobile.css" />
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(135deg, var(--bg) 0%, var(--light-green) 100%);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
 
+        .game-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 40px 20px;
+        }
+
+        .game-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px var(--shadow);
+            animation: pulse 2s infinite;
+        }
+
+        .game-subtitle {
+            font-size: 1.2rem;
+            color: var(--secondary);
+            margin-bottom: 20px;
+        }
+
+        .start-btn {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px var(--shadow);
+        }
+
+        .start-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px var(--shadow);
+        }
+
+        .game-layout {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .game-canvas {
+            position: relative;
+            background: var(--card);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        #gameCanvas {
+            border-radius: 20px;
+            touch-action: none;
+        }
+
+        .info-panel {
+            background: var(--card);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+        }
+
+        .info-item {
+            margin-bottom: 20px;
+        }
+
+        .info-label {
+            font-size: 0.9rem;
+            color: var(--text);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .info-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-align: center;
+        }
+
+        .achievement-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .achievement-item {
+            background: var(--card);
+            padding: 15px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .achievement-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .achievement-icon {
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .achievement-text {
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .watermelon-levels {
+            display: flex;
+            justify-content: space-around;
+            margin: 40px 0;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .level-item {
+            text-align: center;
+            flex: 1;
+            min-width: 100px;
+        }
+
+        .level-icon {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+            opacity: 0.3;
+        }
+
+        .level-item.active .level-icon {
+            opacity: 1;
+            color: var(--secondary);
+        }
+
+        .game-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .overlay-content {
+            text-align: center;
+            color: white;
+        }
+
+        .overlay-title {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .overlay-score {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            color: var(--accent);
+        }
+
+        .retry-btn {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .retry-btn:hover {
+            background: #e55;
+            transform: translateY(-2px);
+        }
+
+        .game-message {
+            position: absolute;
+            background: var(--card);
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            z-index: 50;
+            opacity: 0;
+            animation: messageSlideIn 0.5s ease forwards;
+        }
+
+        @keyframes messageSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .mobile-warning {
+            background: var(--secondary);
+            color: white;
+            text-align: center;
+            padding: 20px;
+            font-weight: 600;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .game-layout {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .game-title {
+                font-size: 2.5rem;
+            }
+
+            .info-panel {
+                grid-column: 1 / -1;
+                position: static;
+            }
+
+            .achievement-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+
+            .watermelon-levels {
+                justify-content: center;
+            }
+        }
+
+        .canvas-container {
+            position: relative;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .level-indicator {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.9);
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+        }
+    </style>
 </head>
+<body>
+    <div class="game-container">
+        <header class="header">
+            <h1 class="game-title animate__animated animate__bounceInDown">老6的西瓜</h1>
+            <p class="game-subtitle">合成更大的西瓜，挑战更高分！</p>
+            <button class="start-btn animate__animated animate__pulse animate__infinite" onclick="startGame()">
+                <i class="fas fa-play"></i> 开始游戏
+            </button>
+        </header>
 
-<body style="margin: 0; background: #ddd;" align="center">
-    <div style="align:center;display: none"><img src="res/share.jpg" width="10%" /></div>
+        <div class="game-layout">
+            <div class="canvas-container">
+                <div class="level-indicator" id="levelIndicator">当前等级: 1</div>
+                <div class="game-canvas">
+                    <canvas id="gameCanvas" width="600" height="600"></canvas>
+                </div>
+                <div class="game-overlay" id="gameOverlay">
+                    <div class="overlay-content">
+                        <h2 class="overlay-title">游戏结束</h2>
+                        <p class="overlay-score">最终得分: <span id="finalScore">0</span></p>
+                        <button class="retry-btn" onclick="restartGame()">
+                            <i class="fas fa-redo"></i> 重新开始
+                        </button>
+                    </div>
+                </div>
+            </div>
 
-    <div id="canvasDiv" style="width:100%;height:100%;">
-        <canvas id="GameCanvas" oncontextmenu="event.preventDefault()" tabindex="0"></canvas>
-        <div id="block-Box" style="display:block;width:100%;height:100%;"></div>
+            <div class="info-panel">
+                <div class="info-item">
+                    <div class="info-label">
+                        <i class="fas fa-trophy"></i> 当前分数
+                    </div>
+                    <div class="info-value" id="currentScore">0</div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-label">
+                        <i class="fas fa-level-up"></i> 下一级目标
+                    </div>
+                    <div class="info-value" id="nextTarget">2</div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-label">
+                        <i class="fas fa-star"></i> 最高记录
+                    </div>
+                    <div class="info-value" id="highScore">0</div>
+                </div>
+
+                <div class="achievement-grid">
+                    <div class="achievement-item">
+                        <div class="achievement-icon">🍉</div>
+                        <div class="achievement-text">小西瓜</div>
+                    </div>
+                    <div class="achievement-item">
+                        <div class="achievement-icon">🍈</div>
+                        <div class="achievement-text">中西瓜</div>
+                    </div>
+                    <div class="achievement-item">
+                        <div class="achievement-icon">🥑</div>
+                        <div class="achievement-text">大西瓜</div>
+                    </div>
+                    <div class="achievement-item">
+                        <div class="achievement-icon">✨</div>
+                        <div class="achievement-text">超大西瓜</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="watermelon-levels" id="levelDisplay">
+            <div class="level-item" data-level="1">
+                <div class="level-icon">🍉</div>
+                <div>一级</div>
+            </div>
+            <div class="level-item" data-level="2">
+                <div class="level-icon">🍉🍉</div>
+                <div>二级</div>
+            </div>
+            <div class="level-item" data-level="3">
+                <div class="level-icon">🍈</div>
+                <div>三级</div>
+            </div>
+            <div class="level-item" data-level="4">
+                <div class="level-icon">🍈🍉</div>
+                <div>四级</div>
+            </div>
+            <div class="level-item" data-level="5">
+                <div class="level-icon">🥑</div>
+                <div>五级</div>
+            </div>
+            <div class="level-item" data-level="6">
+                <div class="level-icon">✨</div>
+                <div>六级</div>
+            </div>
+        </div>
+
+        <div class="mobile-warning">
+            <i class="fas fa-mobile-alt"></i> 移动端体验可能不佳，建议在桌面设备上游戏
+        </div>
     </div>
 
+    <script>
+        // 游戏配置
+        const GAME_WIDTH = 600;
+        const GAME_HEIGHT = 600;
+        const CELL_SIZE = 100;
+        const GRID_SIZE = GAME_WIDTH / CELL_SIZE;
 
+        // 西瓜等级配置
+        const WATERMELON_LEVELS = [
+            { emoji: '🍉', name: '小西瓜', score: 1 },
+            { emoji: '🍉🍉', name: '双西瓜', score: 2 },
+            { emoji: '🍈', name: '中西瓜', score: 4 },
+            { emoji: '🍈🍉', name: '大西瓜', score: 8 },
+            { emoji: '🥑', name: '超大西瓜', score: 16 },
+            { emoji: '✨', name: '传说西瓜', score: 32 }
+        ];
 
-    <div id="adContainer" style="display:none;position: absolute;top:0px;left: 0px;width:100%;height:100%;z-index:999;"></div>
-    <div id="loadingText" style="width:100%;display: none;text-align:center;position:absolute;top:45%;z-index:2;font-size:20px;color:#f99f0a">
-        loading......0%
-    </div>
+        // 游戏状态
+        let gameRunning = false;
+        let currentLevel = 0;
+        let score = 0;
+        let highScore = localStorage.getItem('highScore') || 0;
+        let gameCanvas;
+        let ctx;
+        let watermelons = [];
+        let fallQueue = [];
+        let lastFallTime = 0;
+        let fallInterval = 1000;
+        let levelUpScore = 2;
 
-    <div id="splash">
-        <!-- <div class="progress-bar stripes"> -->
-        <!-- <span style="width: 0%"></span> -->
-        <!-- </div> -->
-    </div>
-
-    <div id="loadingImg" style="top:45%;width: 100%;position:absolute; ">
-        <img src="res/loading.gif" width="7%" height="7%" />
-    </div>
-
-
-
-
-    <!--<div align="center" style="font-size: 10px;color: dimgrey">advertisement</div>-->
-
-
-    <script src="src/settings.js" charset="utf-8"></script>
-
-    <script type="text/javascript">
-        var preloader;
-        var adCompleteFlag = false;
-        var resCompleteFlag = false;
-
-        var adEndComplete = false;
-        var resEndComplete = false;
-
-        judgeLanTitle();
-
-        function judgeLanTitle() {
-            alert("点击宝箱,切换西瓜。破坏游戏体验，谨慎尝试。")
-
-            //        console.log("window.navigator.language",window.navigator.language);
-
-            if (window.navigator.language == "zh-CN" || window.navigator.language == "zh-cn") {
-                document.title = "老六西瓜";
-            } else if (window.navigator.language == "zh-TW") {
-                document.title = "台湾老六西瓜";
-            } else if (window.navigator.language == "zh-HK") {
-                document.title = "香港老六西瓜";
-            } else if (window.navigator.language == "ko-KR") {
-                document.title = "不会韩语";
-            } else if (window.navigator.language == "ja-JP") {
-                document.title = "日本也不会";
-            } else if (window.navigator.language == "th-TH") {
-                document.title = "泰国也不会";
-            } else {
-                document.title = "Little game：Synthetic watermelon";
-            }
-
-
+        // 初始化游戏
+        function initGame() {
+            gameCanvas = document.getElementById('gameCanvas');
+            ctx = gameCanvas.getContext('2d');
+            
+            // 设置画布尺寸
+            resizeCanvas();
+            
+            // 绑定事件
+            bindEvents();
+            
+            // 更新显示
+            updateDisplay();
         }
 
-        var loadintT = document.getElementById("loadingText");
-        var loadintGif = document.getElementById("loadingImg")
-        setTimeout(function() {
-            loadintGif.remove();
-            loadintT.style.display = ""
-            updateLabView(0.1);
-        }, 1 * 1000)
-
-        window.timer = null;
-        window.tempSeconds = 1;
-        window.loadData = {};
-        loadData.completedCount = 0;
-        loadData.totalCount = 0;
-
-        onload();
-
-        function onload() {
-            var winHeight = document.documentElement.clientHeight;
-            document.getElementById("canvasDiv").style.height = winHeight + "px";
-        };
-        window.onload = function() {
-            document.getElementById("block-Box").style.display = "none";
+        // 重置游戏
+        function resetGame() {
+            currentLevel = 0;
+            score = 0;
+            watermelons = [];
+            fallQueue = [];
+            lastFallTime = 0;
+            fallInterval = 1000;
+            levelUpScore = 2;
+            
+            updateDisplay();
         }
 
-        function updateLabView(t) {
-            if (timer != null) {
-                clearInterval(timer);
+        // 开始游戏
+        function startGame() {
+            if (!gameRunning) {
+                gameRunning = true;
+                resetGame();
+                
+                // 立即生成一个西瓜
+                createWatermelon();
+                
+                // 开始游戏循环
+                requestAnimationFrame(gameLoop);
             }
-            timer = setInterval(function() {
-                tempSeconds++;
-                actualTotal();
-                var loadintT = document.getElementById("loadingText")
-                if (!loadintT) {
-                    return;
+        }
+
+        // 重新开始游戏
+        function restartGame() {
+            startGame();
+            hideGameOverlay();
+        }
+
+        // 游戏循环
+        function gameLoop(currentTime) {
+            if (!gameRunning) return;
+            
+            // 更新游戏状态
+            update(currentTime);
+            
+            // 渲染游戏画面
+            render();
+            
+            // 继续游戏循环
+            requestAnimationFrame(gameLoop);
+        }
+
+        // 更新游戏状态
+        function update(currentTime) {
+            // 检查是否需要生成新的西瓜
+            if (currentTime - lastFallTime > fallInterval) {
+                lastFallTime = currentTime;
+                
+                // 随机决定是否生成
+                if (Math.random() < 0.7) {
+                    createWatermelon();
                 }
-                loadintT.innerHTML = 'loading......' + parseInt(tempSeconds) + '%';
-
-                switch (tempSeconds) {
-                    case 20:
-                        updateLabView(0.2);
-                        break;
-                    case 40:
-                        updateLabView(0.3);
-                        break;
-                    case 60:
-                        updateLabView(0.4);
-                        break;
-                    case 96:
-                        updateLabView(5);
-                        break;
-                    case 97:
-                        updateLabView(10);
-                        break;
-                    case 98:
-                        updateLabView(50);
-                        break;
-                    case 99:
-                        updateLabView(100);
-                        break;
-                    default:
-                        if (tempSeconds >= 80 && tempSeconds < 96) {
-                            updateLabView(t + 0.1);
-                        }
-                        break;
+            }
+            
+            // 更新所有西瓜的位置
+            watermelons.forEach(watermelon => {
+                watermelon.y += watermelon.speed;
+                
+                // 检查是否到达底部
+                if (watermelon.y + watermelon.size > GAME_HEIGHT) {
+                    watermelon.y = GAME_HEIGHT - watermelon.size;
+                    watermelon.speed = 0;
+                    
+                    // 检查是否可以合成
+                    checkMerge(watermelon);
                 }
-                if (tempSeconds > 100) {
-                    clearInterval(timer);
-                    tempSeconds = 100
-                    loadintT.innerHTML = 'loading......' + parseInt(tempSeconds) + '%';
-                }
-            }, t * 1000);
+            });
+            
+            // 移除超出底部的西瓜
+            watermelons = watermelons.filter(w => w.speed !== 0 || w.y + w.size <= GAME_HEIGHT);
         }
 
-        function actualTotal() {
-            var percent = parseInt(100 * loadData.completedCount / loadData.totalCount);
-            if (percent > tempSeconds && loadData.totalCount > 1) {
-                tempSeconds = percent;
-            }
-        }
-
-
-        /*setTimeout("ShowBannerAD()","2000");*/
-    </script>
-
-
-
-
-
-    <script src="src/settings.js" charset="utf-8"></script>
-
-    <script src="main.js" charset="utf-8"></script>
-
-
-    <script type="text/javascript">
-        (function() {
-            // open web debugger console
-            if (typeof VConsole !== 'undefined') {
-                window.vConsole = new VConsole();
-            }
-
-            var splash = document.getElementById('splash');
-            splash.style.display = 'block';
-
-
-            console.log("indexlTextTTTT");
-
-            var cocos2d = document.createElement('script');
-            cocos2d.async = true;
-            cocos2d.src = window._CCSettings.debug ? 'cocos2d-js.js' : 'cocos2d-js-min.js';
-
-            var engineLoaded = function() {
-                document.body.removeChild(cocos2d);
-                cocos2d.removeEventListener('load', engineLoaded, false);
-                window.boot();
+        // 创建新的西瓜
+        function createWatermelon() {
+            const level = Math.min(currentLevel, WATERMELON_LEVELS.length - 1);
+            const watermelon = WATERMELON_LEVELS[level];
+            
+            const newWatermelon = {
+                x: Math.random() * (GAME_WIDTH - 50) + 25,
+                y: -50,
+                size: 50 + currentLevel * 20,
+                speed: 2 + currentLevel * 0.5,
+                level: currentLevel,
+                emoji: watermelon.emoji,
+                score: watermelon.score
             };
-            cocos2d.addEventListener('load', engineLoaded, false);
-            document.body.appendChild(cocos2d);
-        })();
+            
+            fallQueue.push(newWatermelon);
+        }
+
+        // 检查是否可以合成
+        function checkMerge(watermelon) {
+            const candidates = watermelons.filter(w => 
+                w !== watermelon &&
+                w.level === watermelon.level &&
+                Math.abs(w.x - watermelon.x) < 40 &&
+                Math.abs(w.y - watermelon.y) < 40
+            );
+            
+            if (candidates.length > 0) {
+                // 执行合成
+                performMerge(watermelon, candidates[0]);
+            }
+        }
+
+        // 执行合成
+        function performMerge(w1, w2) {
+            // 从列表中移除
+            watermelons = watermelons.filter(w => w !== w1 && w !== w2);
+            
+            // 创建新的高等级西瓜
+            const newLevel = currentLevel + 1;
+            if (newLevel < WATERMELON_LEVELS.length) {
+                const newWatermelon = {
+                    x: (w1.x + w2.x) / 2,
+                    y: (w1.y + w2.y) / 2 - 25,
+                    size: 50 + newLevel * 20,
+                    speed: 0,
+                    level: newLevel,
+                    emoji: WATERMELON_LEVELS[newLevel].emoji,
+                    score: WATERMELON_LEVELS[newLevel].score
+                };
+                
+                watermelons.push(newWatermelon);
+                
+                // 增加分数
+                score += WATERMELON_LEVELS[newLevel].score;
+                updateDisplay();
+                
+                // 显示合成特效
+                showMergeEffect(newWatermelon.x, newWatermelon.y);
+                
+                // 检查是否升级
+                if (score >= levelUpScore) {
+                    levelUp();
+                }
+            } else {
+                // 达到最高等级，游戏胜利
+                winGame();
+            }
+        }
+
+        // 级别升级
+        function levelUp() {
+            currentLevel++;
+            fallInterval = Math.max(500, fallInterval - 200);
+            levelUpScore *= 2;
+            
+            // 更新显示
+            updateDisplay();
+            
+            // 显示升级提示
+            showGameMessage('等级提升！', '恭喜', 2000);
+        }
+
+        // 游戏胜利
+        function winGame() {
+            gameRunning = false;
+            showGameOverlay(`恭喜你合成${WATERMELON_LEVELS[currentLevel].name}！`, score);
+        }
+
+        // 渲染游戏画面
+        function render() {
+            // 清空画布
+            ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+            
+            // 绘制背景网格
+            drawGrid();
+            
+            // 绘制所有西瓜
+            watermelons.forEach(watermelon => {
+                drawWatermelon(watermelon);
+            });
+            
+            // 绘制下落队列中的西瓜
+            fallQueue.forEach((watermelon, index) => {
+                const progress = (Date.now() % 1000) / 1000;
+                watermelon.y = -50 + index * 70 + progress * 70;
+                drawWatermelon(watermelon);
+            });
+            
+            // 清空下落队列
+            fallQueue = [];
+        }
+
+        // 绘制网格
+        function drawGrid() {
+            ctx.strokeStyle = 'rgba(90,159,90,0.3)';
+            for (let i = 1; i < GRID_SIZE; i++) {
+                ctx.beginPath();
+                ctx.moveTo(i * CELL_SIZE, 0);
+                ctx.lineTo(i * CELL_SIZE, GAME_HEIGHT);
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.moveTo(0, i * CELL_SIZE);
+                ctx.lineTo(GAME_WIDTH, i * CELL_SIZE);
+                ctx.stroke();
+            }
+        }
+
+        // 绘制西瓜
+        function drawWatermelon(watermelon) {
+            ctx.save();
+            ctx.fillStyle = '#ffffff';
+            ctx.shadowColor = 'rgba(90,159,90,0.8)';
+            ctx.shadowBlur = 10;
+            ctx.shadowOffsetY = 5;
+            
+            // 绘制圆形背景
+            ctx.beginPath();
+            ctx.arc(watermelon.x, watermelon.y, watermelon.size / 2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 绘制 emoji
+            ctx.fillStyle = '#000000';
+            ctx.font = `${watermelon.size - 10}px serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(watermelon.emoji, watermelon.x, watermelon.y);
+            
+            ctx.restore();
+        }
+
+        // 显示合成特效
+        function showMergeEffect(x, y) {
+            const effect = document.createElement('div');
+            effect.className = 'game-effect';
+            effect.innerHTML = '✨';
+            effect.style.position = 'absolute';
+            effect.style.left = x - 25 + 'px';
+            effect.style.top = y - 25 + 'px';
+            effect.style.fontSize = '50px';
+            effect.style.animation = 'sparkle 1s ease-out forwards';
+            effect.style.pointerEvents = 'none';
+            
+            gameCanvas.parentElement.appendChild(effect);
+            
+            setTimeout(() => {
+                effect.remove();
+            }, 1000);
+        }
+
+        // 更新显示
+        function updateDisplay() {
+            document.getElementById('currentScore').textContent = score;
+            document.getElementById('nextTarget').textContent = levelUpScore;
+            document.getElementById('highScore').textContent = highScore;
+            document.getElementById('levelIndicator').textContent = `当前等级: ${currentLevel + 1}`;
+            
+            // 更新等级显示
+            const levels = document.querySelectorAll('.level-item');
+            levels.forEach(level => {
+                level.classList.toggle('active', parseInt(level.dataset.level) === currentLevel + 1);
+            });
+        }
+
+        // 显示游戏覆盖层
+        function showGameOverlay(title, score) {
+            const overlay = document.getElementById('gameOverlay');
+            const finalScore = document.getElementById('finalScore');
+            finalScore.textContent = score;
+            overlay.style.opacity = '1';
+        }
+
+        // 隐藏游戏覆盖层
+        function hideGameOverlay() {
+            const overlay = document.getElementById('gameOverlay');
+            overlay.style.opacity = '0';
+            gameRunning = true;
+        }
+
+        // 显示游戏消息
+        function showGameMessage(message, title, duration) {
+            const gameContainer = document.querySelector('.game-container');
+            const message = document.createElement('div');
+            message.className = 'game-message';
+            message.innerHTML = `
+                <div style="font-size: 1.2rem; margin-bottom: 10px; color: var(--secondary);">${title}</div>
+                <div style="font-size: 1rem; color: var(--primary);">${message}</div>
+            `;
+            gameContainer.appendChild(message);
+            
+            setTimeout(() => {
+                message.style.opacity = '0';
+                message.style.transform = 'translateY(50px)';
+                setTimeout(() => {
+                    message.remove();
+                }, 500);
+            }, duration);
+        }
+
+        // 绑定事件
+        function bindEvents() {
+            // 鼠标点击事件
+            gameCanvas.addEventListener('click', handleCanvasClick);
+            
+            // 键盘事件
+            document.addEventListener('keydown', handleKeyDown);
+            
+            // 窗口大小改变事件
+            window.addEventListener('resize', resizeCanvas);
+        }
+
+        // 处理画布点击
+        function handleCanvasClick(e) {
+            if (!gameRunning) return;
+            
+            const rect = gameCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            // 检查是否点击了某个西瓜
+            watermelons.forEach(watermelon => {
+                const distance = Math.sqrt((x - watermelon.x) ** 2 + (y - watermelon.y) ** 2);
+                if (distance < watermelon.size / 2) {
+                    // 点击了这个西瓜，可以执行一些操作
+                    showGameMessage('点击了西瓜', '提示', 1000);
+                }
+            });
+        }
+
+        // 处理键盘事件
+        function handleKeyDown(e) {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                if (gameRunning) {
+                    // 暂停游戏
+                    gameRunning = false;
+                    showGameMessage('游戏暂停', '提示', 1000);
+                ;;= 'Escape') {
+                e.preventDefault();
+                if (!gameRunning) {
+                    // 重新开始游戏
+                    restartGame();
+                }
+            }
+        }
+
+        // 重置画布大小
+        function resizeCanvas() {
+            const container = gameCanvas.parentElement;
+            const width = Math.min(600, container.clientWidth - 100);
+            const height = Math.min(600, container.clientHeight - 100);
+            
+            gameCanvas.width = width;
+            gameCanvas.height = height;
+            
+            // 重新计算网格大小
+            const newGridSize = width / CELL_SIZE;
+            // 这里可能需要重新计算一些游戏逻辑
+            
+            render();
+        }
+
+        // 添加一些 CSS 动画
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes sparkle {
+                0% {
+                    transform: scale(0) rotate(0deg);
+                    opacity: 1;
+                }
+                50% {
+                    transform: scale(1.5) rotate(180deg);
+                    opacity: 1;
+                }
+                100% {
+                    transform: scale(0) rotate(360deg);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // 初始化游戏
+        document.addEventListener('DOMContentLoaded', initGame);
     </script>
-
-
-
-
 </body>
-
 </html>
+
+
+
