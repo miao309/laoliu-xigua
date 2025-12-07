@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>老六的西瓜</title>
+  <title>老六的大西瓜</title>
   <style>
     * {
       margin: 0;
@@ -86,7 +86,7 @@
   <div id="score-board">得分: <span id="score">0</span></div>
   <div id="game-container">
     <div id="fail-line"></div>
-    <div id="start-tip">点击/触屏任意位置投放水果！</div>
+    <div id="start-tip">老六，快投水果！</div>
     <div id="game-over">
       游戏结束！<br/>
       最终得分：<span id="final-score">0</span><br/>
@@ -129,10 +129,10 @@
 
       const width = container.clientWidth;
       const height = container.clientHeight;
-      const failLineY = 100; // 红线位置（Y=100）
+      const failLineY = 100;
 
       const engine = Engine.create({
-        enableSleeping: false, // 关键：禁用休眠，确保碰撞可检测
+        enableSleeping: false,
         gravity: { x: 0, y: 1 }
       });
 
@@ -168,7 +168,6 @@
         World.add(engine.world, fruit);
       }
 
-      // 手动检测重叠水果（替代 collisionStart）
       function checkCollisions() {
         if (gameOver) return;
         const fruits = engine.world.bodies.filter(b => b.itemType);
@@ -205,7 +204,7 @@
                 });
                 World.add(engine.world, newFruit);
               }
-              return; // 每帧只处理一对
+              return;
             }
           }
         }
@@ -213,14 +212,11 @@
 
       Events.on(engine, 'afterUpdate', checkCollisions);
 
-      // ✅ 修复后的失败检测逻辑
       function checkGameOver() {
         if (gameOver) return;
         for (const body of engine.world.bodies) {
           if (body.itemType && body.circleRadius) {
-            // 跳过还在屏幕上方下落的水果（避免误判）
-            if (body.position.y < 60) continue;
-
+            if (body.position.y < 60) continue; // 忽略下落中的水果
             const topY = body.position.y - body.circleRadius;
             if (topY < failLineY) {
               endGame();
@@ -245,7 +241,6 @@
         Runner.run(runner, engine);
         Render.run(render);
 
-        // 延迟启动失败检测，避免初期误判
         setTimeout(() => {
           if (!gameOver) {
             checkInterval = setInterval(checkGameOver, 300);
