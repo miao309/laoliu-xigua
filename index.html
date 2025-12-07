@@ -118,8 +118,7 @@
             Runner = Matter.Runner,
             Bodies = Matter.Bodies,
             World = Matter.World,
-            Events = Matter.Events,
-            Vector = Matter.Vector;
+            Events = Matter.Events;
 
       const container = document.getElementById('game-container');
       const scoreEl = document.getElementById('score');
@@ -130,7 +129,7 @@
 
       const width = container.clientWidth;
       const height = container.clientHeight;
-      const failLineY = 100;
+      const failLineY = 100; // 红线位置（Y=100）
 
       const engine = Engine.create({
         enableSleeping: false, // 关键：禁用休眠，确保碰撞可检测
@@ -185,7 +184,7 @@
             const distance = Math.sqrt(dx * dx + dy * dy);
             const minDist = a.circleRadius + b.circleRadius;
 
-            if (distance < minDist * 0.92) { // 容忍误差
+            if (distance < minDist * 0.92) {
               const type = a.itemType;
               const index = FRUIT_TYPES.indexOf(type);
               World.remove(engine.world, [a, b]);
@@ -214,10 +213,14 @@
 
       Events.on(engine, 'afterUpdate', checkCollisions);
 
+      // ✅ 修复后的失败检测逻辑
       function checkGameOver() {
         if (gameOver) return;
         for (const body of engine.world.bodies) {
           if (body.itemType && body.circleRadius) {
+            // 跳过还在屏幕上方下落的水果（避免误判）
+            if (body.position.y < 60) continue;
+
             const topY = body.position.y - body.circleRadius;
             if (topY < failLineY) {
               endGame();
@@ -242,11 +245,12 @@
         Runner.run(runner, engine);
         Render.run(render);
 
+        // 延迟启动失败检测，避免初期误判
         setTimeout(() => {
           if (!gameOver) {
-            checkInterval = setInterval(checkGameOver, 400);
+            checkInterval = setInterval(checkGameOver, 300);
           }
-        }, 1000);
+        }, 1200);
       }
 
       container.addEventListener('pointerdown', (e) => {
@@ -274,9 +278,9 @@
         Render.run(render);
         setTimeout(() => {
           if (!gameOver) {
-            checkInterval = setInterval(checkGameOver, 400);
+            checkInterval = setInterval(checkGameOver, 300);
           }
-        }, 1000);
+        }, 1200);
       });
     });
   </script>
