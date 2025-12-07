@@ -118,7 +118,8 @@
             Runner = Matter.Runner,
             Bodies = Matter.Bodies,
             World = Matter.World,
-            Events = Matter.Events;
+            Events = Matter.Events,
+            Vector = Matter.Vector;
 
       const container = document.getElementById('game-container');
       const scoreEl = document.getElementById('score');
@@ -132,7 +133,7 @@
       const failLineY = 100;
 
       const engine = Engine.create({
-        enableSleeping: true,
+        enableSleeping: false, // 关键：禁用休眠，确保碰撞可检测
         gravity: { x: 0, y: 1 }
       });
 
@@ -162,45 +163,61 @@
           friction: 0.01,
           frictionAir: 0.02,
           render: { fillStyle: type.color },
-          itemType: type
+          itemType: type,
+          label: 'fruit'
         });
         World.add(engine.world, fruit);
       }
 
-      Events.on(engine, 'collisionStart', (event) => {
+      // 手动检测重叠水果（替代 collisionStart）
+      function checkCollisions() {
         if (gameOver) return;
-        event.pairs.forEach(pair => {
-          const { bodyA, bodyB } = pair;
-          if (!bodyA.itemType || !bodyB.itemType) return;
-          if (bodyA.itemType.name !== bodyB.itemType.name) return;
+        const fruits = engine.world.bodies.filter(b => b.itemType);
+        for (let i = 0; i < fruits.length; i++) {
+          for (let j = i + 1; j < fruits.length; j++) {
+            const a = fruits[i];
+            const b = fruits[j];
+            if (!a.itemType || !b.itemType) continue;
+            if (a.itemType.name !== b.itemType.name) continue;
 
-          const type = bodyA.itemType;
-          const index = FRUIT_TYPES.indexOf(type);
-          if (index === -1) return;
+            const dx = a.position.x - b.position.x;
+            const dy = a.position.y - b.position.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            const minDist = a.circleRadius + b.circleRadius;
 
-          World.remove(engine.world, [bodyA, bodyB]);
-          score += type.score;
-          scoreEl.textContent = score;
+            if (distance < minDist * 0.92) { // 容忍误差
+              const type = a.itemType;
+              const index = FRUIT_TYPES.indexOf(type);
+              World.remove(engine.world, [a, b]);
+              score += type.score;
+              scoreEl.textContent = score;
 
-          if (index >= FRUIT_TYPES.length - 1) return;
+              if (index < FRUIT_TYPES.length - 1) {
+                const newType = FRUIT_TYPES[index + 1];
+                const posX = (a.position.x + b.position.x) / 2;
+                const posY = (a.position.y + b.position.y) / 2;
+                const newFruit = Bodies.circle(posX, posY, newType.size, {
+                  restitution: 0.6,
+                  friction: 0.01,
+                  frictionAir: 0.02,
+                  render: { fillStyle: newType.color },
+                  itemType: newType,
+                  label: 'fruit'
+                });
+                World.add(engine.world, newFruit);
+              }
+              return; // 每帧只处理一对
+            }
+          }
+        }
+      }
 
-          const newType = FRUIT_TYPES[index + 1];
-          const posX = (bodyA.position.x + bodyB.position.x) / 2;
-          const newFruit = Bodies.circle(posX, bodyA.position.y, newType.size, {
-            restitution: 0.6,
-            friction: 0.01,
-            frictionAir: 0.02,
-            render: { fillStyle: newType.color },
-            itemType: newType
-          });
-          World.add(engine.world, newFruit);
-        });
-      });
+      Events.on(engine, 'afterUpdate', checkCollisions);
 
       function checkGameOver() {
         if (gameOver) return;
         for (const body of engine.world.bodies) {
-          if (body.itemType && body.circleRadius && body.isSleeping) {
+          if (body.itemType && body.circleRadius) {
             const topY = body.position.y - body.circleRadius;
             if (topY < failLineY) {
               endGame();
